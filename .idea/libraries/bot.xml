@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="bot" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$USER_HOME$/node_modules/node-telegram-bot-api" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$USER_HOME$/node_modules/node-telegram-bot-api" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>
