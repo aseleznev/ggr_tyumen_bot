@@ -1,8 +1,8 @@
 const TelegramBot = require("node-telegram-bot-api");
-// const token = "553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc";
+const token = '553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc';
 // const bot = new TelegramBot(token, { polling: true });
 
-const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
+const TOKEN = process.env.TELEGRAM_TOKEN || token;
 const options = {
   webHook: {
     // Port to which you should bind is assigned to $PORT variable
