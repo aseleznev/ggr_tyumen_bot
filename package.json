@@ -1,0 +1,19 @@
+{
+  "name": "ggr_tyumen_bot",
+  "version": "1.0.0",
+  "description": "CoffeBot",
+  "main": "ggr_tyumen_bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aseleznev/ggr_tyumen_bot.git"
+  },
+  "author": "Alexander Seleznev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aseleznev/ggr_tyumen_bot/issues"
+  },
+  "homepage": "https://github.com/aseleznev/ggr_tyumen_bot#readme"
+}
