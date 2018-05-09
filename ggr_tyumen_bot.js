@@ -1,4 +1,4 @@
-const TelegramBot = require("node-telegram-bot-api");
+import TelegramBot from "node-telegram-bot-api";
 const token = '553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc';
 // const bot = new TelegramBot(token, { polling: true });
 
@@ -17,20 +17,21 @@ const options = {
 // Add URL of your app to env variable or enable Dyno Metadata
 // to get this automatically
 // See: https://devcenter.heroku.com/articles/dyno-metadata
-const url = process.env.APP_URL || 'https://fierce-savannah-13630.herokuapp.com:443';
+//const url = process.env.APP_URL || 'https://fierce-savannah-13630.herokuapp.com:443';
+const url = process.env.APP_URL || 'https://aqueous.herokuapp.com:443';
 const bot = new TelegramBot(TOKEN, options);
 
 // This informs the Telegram servers of the new webhook.
 // Note: we do not need to pass in the cert, as it already provided
 bot.setWebHook(`${url}/bot${TOKEN}`);
 
-const fs = require("fs");
+import { writeFile, readFile } from "fs";
 let stats = {};
 
 function saveData(sendedMessageId = "") {
   stats.lastMessageId = sendedMessageId === undefined ? "" : sendedMessageId;
 
-  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
     if (err) {
       console.log("ошибка сохранения файла!");
       console.log(err);
@@ -50,7 +51,7 @@ function resetStats(callback) {
 
   console.log("сброс статистики");
 
-  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
     if (err) {
       console.log("Файл не сохранен");
       console.log(err);
@@ -89,7 +90,7 @@ function testSender(msg, sum) {
 }
 
 function readData(callback) {
-  fs.readFile("ggr_bot_data.json", "utf8", (err, data) => {
+  readFile("ggr_bot_data.json", "utf8", (err, data) => {
     if (err) {
       console.log("Не прочитали файлик");
       resetStats(() => {
