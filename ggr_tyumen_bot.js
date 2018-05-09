@@ -18,7 +18,7 @@ const options = {
 // to get this automatically
 // See: https://devcenter.heroku.com/articles/dyno-metadata
 //const url = process.env.APP_URL || 'https://fierce-savannah-13630.herokuapp.com:443';
-const url = process.env.APP_URL || 'https://aqueous.herokuapp.com:443';
+const url = process.env.APP_URL || 'https://aqueous-island-48302.herokuapp.com:443';
 const bot = new TelegramBot(TOKEN, options);
 
 // This informs the Telegram servers of the new webhook.
