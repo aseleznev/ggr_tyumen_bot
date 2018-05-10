@@ -1,37 +1,22 @@
-import TelegramBot from "node-telegram-bot-api";
-const token = '553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc';
-// const bot = new TelegramBot(token, { polling: true });
-
-const TOKEN = process.env.TELEGRAM_TOKEN || token;
+const TelegramBot = require("node-telegram-bot-api");
+const TOKEN =
+  process.env.TELEGRAM_TOKEN || "553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc";
 const options = {
   webHook: {
-    // Port to which you should bind is assigned to $PORT variable
-    // See: https://devcenter.heroku.com/articles/dynos#local-environment-variables
     port: process.env.PORT
-    // you do NOT need to set up certificates since Heroku provides
-    // the SSL certs already (https://<app-name>.herokuapp.com)
-    // Also no need to pass IP because on Heroku you need to bind to 0.0.0.0
   }
 };
-// Heroku routes from port :443 to $PORT
-// Add URL of your app to env variable or enable Dyno Metadata
-// to get this automatically
-// See: https://devcenter.heroku.com/articles/dyno-metadata
-//const url = process.env.APP_URL || 'https://fierce-savannah-13630.herokuapp.com:443';
-const url = process.env.APP_URL || 'https://aqueous-island-48302.herokuapp.com:443';
+const url =
+  process.env.APP_URL || "https://aqueous-island-48302.herokuapp.com:443";
 const bot = new TelegramBot(TOKEN, options);
+const fs = require("fs");
 
-// This informs the Telegram servers of the new webhook.
-// Note: we do not need to pass in the cert, as it already provided
 bot.setWebHook(`${url}/bot${TOKEN}`);
-
-import { writeFile, readFile } from "fs";
-let stats = {};
 
 function saveData(sendedMessageId = "") {
   stats.lastMessageId = sendedMessageId === undefined ? "" : sendedMessageId;
 
-  writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
     if (err) {
       console.log("ошибка сохранения файла!");
       console.log(err);
@@ -51,7 +36,7 @@ function resetStats(callback) {
 
   console.log("сброс статистики");
 
-  writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
     if (err) {
       console.log("Файл не сохранен");
       console.log(err);
@@ -77,6 +62,9 @@ function testSender(msg, sum) {
     console.log("Не нашли " + JSON.stringify(currentUserObj));
     if (sum > 0) {
       stats.table.push(currentUserObj);
+      if (stats.totalSum + sum >= stats.total) {
+        stats.table[stats.table.length - 1].sum = stats.total - stats.totalSum;
+      }
     } else {
       replyToMessage(msg.chat.id, "Ты еще нихера не вкинул!", msg.message_id);
     }
@@ -84,13 +72,16 @@ function testSender(msg, sum) {
     console.log("Нашли " + JSON.stringify(currentUserObj));
     if (sum > 0 && stats.totalSum + sum <= stats.total) {
       stats.table[currentIndex].sum += sum;
+    } else {
+      stats.table[currentIndex].sum += stats.total - stats.totalSum;
     }
   }
-  stats.totalSum += sum;
+  stats.totalSum =
+    stats.totalSum + sum >= stats.total ? stats.total : stats.totalSum + sum;
 }
 
 function readData(callback) {
-  readFile("ggr_bot_data.json", "utf8", (err, data) => {
+  fs.readFile("ggr_bot_data.json", "utf8", (err, data) => {
     if (err) {
       console.log("Не прочитали файлик");
       resetStats(() => {
@@ -146,23 +137,39 @@ function replyToMessage(chatId, messageText, messageID) {
     .sendMessage(chatId, messageText, {
       reply_to_message_id: messageID
     })
-    .then(() => {})
-    .catch(() => {});
+    .then(res => {
+      console.log(res);
+    })
+    .catch(err => {
+      console.log(err);
+    });
 }
+
+///*************************************
+
+readData(() => {});
 
 bot.onText(/\/send@ggr_tyumen_bot (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
   const summ = +match[1];
 
   console.log("есть контакт");
-
   if (isNaN(summ) || summ === 0) {
-    replyToMessage(chatId, "Напиши сумму!", msg.message_id);
+    replyToMessage(chatId, "Напиши сумму! цифрами!", msg.message_id);
+  } else if (stats.total === 0) {
+    replyToMessage(chatId, "Сначала установи собираемую сумму", msg.message_id);
+  } else if (stats.total !== 0 && stats.total === stats.totalSum) {
+    replyToMessage(chatId, "Бабло уже собрано! не тормози)", msg.message_id);
   } else if (stats.totalSum + summ > stats.total) {
-    const messageText = `Слыш Абрамович, нам нужно лишь ${stats.total -
-      stats.totalSum} ₽`;
+    let messageText = `Бабло собрано, оставь себе ${stats.totalSum +
+      summ -
+      stats.total}₽`;
     replyToMessage(chatId, messageText, msg.message_id);
-  } else {
+
+    testSender(msg, summ);
+
+    sendMessage(msg);
+  } else if (stats.totalSum < stats.total) {
     console.log("есть сумма");
 
     readData(res => {
@@ -192,7 +199,7 @@ bot.onText(/\/set_total@ggr_tyumen_bot (.+)/, (msg, match) => {
 
   if (isNaN(sum)) {
     console.log("сумма isNaN");
-    replyToMessage(msg.chat.id, "Напиши сумму!", msg.message_id);
+    replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
   } else {
     console.log("Словили сообщение");
     readData(res => {
@@ -213,10 +220,10 @@ bot.on("message", msg => {
       });
       break;
     case "/set_total@ggr_tyumen_bot":
-      replyToMessage(msg.chat.id, "Напиши сумму!", msg.message_id);
+      replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
       break;
     case "/send@ggr_tyumen_bot":
-      replyToMessage(msg.chat.id, "Напиши сумму!", msg.message_id);
+      replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
       break;
   }
 });
