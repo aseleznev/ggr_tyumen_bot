@@ -12,7 +12,7 @@
     "npm": "6.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ggr_tyumen_bot.js"
   },
   "repository": {
     "type": "git",
