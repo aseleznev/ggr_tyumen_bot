@@ -5,7 +5,8 @@
   "main": "ggr_tyumen_bot.js",
   "dependencies": {
     "node-telegram-bot-api": "0.30.0",
-    "fs": "0.0.1-security"
+    "fs": "0.0.1-security",
+    "pg": "7.4.3"
   },
   "engines": {
     "node": "10.0.0",
