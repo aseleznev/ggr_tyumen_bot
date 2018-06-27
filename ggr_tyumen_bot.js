@@ -10,19 +10,33 @@ const url =
   process.env.APP_URL || "https://aqueous-island-48302.herokuapp.com:443";
 const bot = new TelegramBot(TOKEN, options);
 const fs = require("fs");
+const db = require("../db");
 
 bot.setWebHook(`${url}/bot${TOKEN}`);
 
 function saveData(sendedMessageId = "") {
   stats.lastMessageId = sendedMessageId === undefined ? "" : sendedMessageId;
 
-  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
-    if (err) {
-      console.log("ошибка сохранения файла!");
-      console.log(err);
-    }
+  // fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  //   if (err) {
+  //     console.log("ошибка сохранения файла!");
+  //     console.log(err);
+  //   }
+  //   console.log("The file was saved!");
+  // });
 
-    console.log("The file was saved!");
+  const queryText = "insert into stat(object) values($1)";
+
+  const values = [JSON.stringify(stats)];
+  //db.query(queryText, values, (err, res) => {
+
+  db.query(queryText, values, (err, res) => {
+    if (err) {
+      console.log(err);
+      console.log("Не записали строку");
+    } else {
+      console.log("Записали строку");
+    }
   });
 }
 
@@ -36,14 +50,65 @@ function resetStats(callback) {
 
   console.log("сброс статистики");
 
-  fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  // fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
+  //   if (err) {
+  //     console.log("Файл не сохранен");
+  //     console.log(err);
+  //     callback();
+  //   }
+  //   console.log("The file was saved!");
+  //   callback();
+  // });
+
+  const queryText = "insert into stat(object) values($1)";
+
+  const values = [JSON.stringify(stats)];
+  //db.query(queryText, values, (err, res) => {
+
+  db.query(queryText, values, (err, res) => {
     if (err) {
-      console.log("Файл не сохранен");
       console.log(err);
+      console.log("Не записали строку");
+      callback();
+    } else {
+      console.log("Записали строку");
       callback();
     }
-    console.log("The file was saved!");
-    callback();
+  });
+}
+
+function readData(callback) {
+  // fs.readFile("ggr_bot_data.json", "utf8", (err, data) => {
+  //   if (err) {
+  //     console.log("Не прочитали файлик");
+  //     resetStats(() => {
+  //       callback();
+  //     });
+  //   } else {
+  //     console.log("Успешно прочитали файлик");
+  //     stats = JSON.parse(data);
+  //     callback();
+  //   }
+  //});
+
+  const queryText = "select object from stat";
+
+  //const values = [-233162232, true];
+  //db.query(queryText, values, (err, res) => {
+
+  db.query(queryText, [], (err, res) => {
+    if (err) {
+      console.log(err);
+      console.log("Не прочитали базу");
+      resetStats(() => {
+        callback();
+      });
+    } else {
+      console.log(res.rows[res.rowCount - 1]);
+      console.log("Успешно прочитали базу");
+      stats = JSON.parse(res.rows[res.rowCount - 1].object);
+      callback();
+    }
   });
 }
 
@@ -78,21 +143,6 @@ function testSender(msg, sum) {
   }
   stats.totalSum =
     stats.totalSum + sum >= stats.total ? stats.total : stats.totalSum + sum;
-}
-
-function readData(callback) {
-  fs.readFile("ggr_bot_data.json", "utf8", (err, data) => {
-    if (err) {
-      console.log("Не прочитали файлик");
-      resetStats(() => {
-        callback();
-      });
-    } else {
-      console.log("Успешно прочитали файлик");
-      stats = JSON.parse(data);
-      callback();
-    }
-  });
 }
 
 function sendMessage(msg) {
