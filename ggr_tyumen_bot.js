@@ -10,7 +10,7 @@ const url =
   process.env.APP_URL || "https://aqueous-island-48302.herokuapp.com:443";
 const bot = new TelegramBot(TOKEN, options);
 const fs = require("fs");
-const db = require("../ggrbot/db");
+const db = require("./db");
 
 bot.setWebHook(`${url}/bot${TOKEN}`);
 
