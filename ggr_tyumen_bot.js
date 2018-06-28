@@ -135,10 +135,14 @@ function testSender(msg, sum) {
     }
   } else {
     console.log("Нашли " + JSON.stringify(currentUserObj));
-    if (sum > 0 && stats.totalSum + sum <= stats.total) {
-      stats.table[currentIndex].sum += sum;
+    if (sum > 0) {
+      if (stats.totalSum + sum <= stats.total) {
+        stats.table[currentIndex].sum += sum;
+      } else {
+        stats.table[currentIndex].sum += stats.total - stats.totalSum;
+      }
     } else {
-      stats.table[currentIndex].sum += stats.total - stats.totalSum;
+      stats.table[currentIndex].sum += sum;
     }
   }
   stats.totalSum =
@@ -195,11 +199,25 @@ function replyToMessage(chatId, messageText, messageID) {
     });
 }
 
-///*************************************
+function setTotal(msg, match) {
+  const sum = +match[1];
+  const chatId = msg.chat.id;
 
-readData(() => {});
+  if (isNaN(sum)) {
+    console.log("сумма isNaN");
+    replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
+  } else {
+    console.log("Словили сообщение");
+    readData((chatId, res) => {
+      stats.total = sum;
 
-bot.onText(/\/send@ggr_tyumen_bot (.+)/, (msg, match) => {
+      sendMessage(msg);
+      console.log(res);
+    });
+  }
+}
+
+function send(msg, match) {
   const chatId = msg.chat.id;
   const summ = +match[1];
 
@@ -222,7 +240,7 @@ bot.onText(/\/send@ggr_tyumen_bot (.+)/, (msg, match) => {
   } else if (stats.totalSum < stats.total) {
     console.log("есть сумма");
 
-    readData(res => {
+    readData((chatid, res) => {
       testSender(msg, summ);
 
       let lastMessageId = stats.lastMessageId;
@@ -242,34 +260,49 @@ bot.onText(/\/send@ggr_tyumen_bot (.+)/, (msg, match) => {
       console.log(res);
     });
   }
+}
+
+///*************************************
+
+readData(() => {});
+
+bot.onText(/\/send (.+)/, (msg, match) => {
+  send(msg, match);
+});
+
+bot.onText(/\/send@ggr_tyumen_bot (.+)/, (msg, match) => {
+  send(msg, match);
+});
+
+bot.onText(/\/set_total (.+)/, (msg, match) => {
+  setTotal(msg, match);
 });
 
 bot.onText(/\/set_total@ggr_tyumen_bot (.+)/, (msg, match) => {
-  const sum = +match[1];
-
-  if (isNaN(sum)) {
-    console.log("сумма isNaN");
-    replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
-  } else {
-    console.log("Словили сообщение");
-    readData(res => {
-      stats.total = sum;
-
-      sendMessage(msg);
-      console.log(res);
-    });
-  }
+  setTotal(msg, match);
 });
 
 bot.on("message", msg => {
   switch (msg.text) {
+    case "/reset":
+      resetStats(res => {
+        sendMessage(msg);
+        console.log(res);
+      });
+      break;
     case "/reset@ggr_tyumen_bot":
       resetStats(res => {
         sendMessage(msg);
         console.log(res);
       });
       break;
+    case "/set_total":
+      replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
+      break;
     case "/set_total@ggr_tyumen_bot":
+      replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
+      break;
+    case "/send":
       replyToMessage(msg.chat.id, "Напиши сумму! цифрами", msg.message_id);
       break;
     case "/send@ggr_tyumen_bot":
