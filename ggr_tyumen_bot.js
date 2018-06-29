@@ -1,18 +1,11 @@
 const TelegramBot = require("node-telegram-bot-api");
-const TOKEN =
-  process.env.TELEGRAM_TOKEN || "553011091:AAHNN1kCFBOhCz18Qw9Rsf5gh1u3gOOloEc";
-const options = {
-  webHook: {
-    port: process.env.PORT
-  }
-};
-const url =
-  process.env.APP_URL || "https://aqueous-island-48302.herokuapp.com:443";
-const bot = new TelegramBot(TOKEN, options);
 const fs = require("fs");
 const db = require("./db");
 
-bot.setWebHook(`${url}/bot${TOKEN}`);
+const config = require('./config');
+const bot = new TelegramBot(config.telegram.token, config.telegram.options);
+
+bot.setWebHook(`${config.app.uri}/bot${config.telegram.token}`);
 
 function saveData(sendedMessageId = "") {
   stats.lastMessageId = sendedMessageId === undefined ? "" : sendedMessageId;
