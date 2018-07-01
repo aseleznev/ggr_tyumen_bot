@@ -113,7 +113,10 @@ function testSender(msg, sum) {
   };
 
   let currentIndex = stats.table.findIndex(element => {
-    return element.lastName === currentUserObj.lastName;
+    return (
+      element.firstName === currentUserObj.firstName &&
+      element.lastName === currentUserObj.lastName
+    );
   });
 
   if (currentIndex === -1) {
