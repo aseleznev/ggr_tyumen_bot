@@ -1,5 +1,4 @@
 const TelegramBot = require("node-telegram-bot-api");
-const fs = require("fs");
 const db = require("./db");
 
 const config = require('./config');
@@ -10,18 +9,9 @@ bot.setWebHook(`${config.app.uri}/bot${config.telegram.token}`);
 function saveData(sendedMessageId = "") {
   stats.lastMessageId = sendedMessageId === undefined ? "" : sendedMessageId;
 
-  // fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
-  //   if (err) {
-  //     console.log("ошибка сохранения файла!");
-  //     console.log(err);
-  //   }
-  //   console.log("The file was saved!");
-  // });
-
   const queryText = "insert into stat(object) values($1)";
 
   const values = [JSON.stringify(stats)];
-  //db.query(queryText, values, (err, res) => {
 
   db.query(queryText, values, (err, res) => {
     if (err) {
@@ -43,20 +33,9 @@ function resetStats(callback) {
 
   console.log("сброс статистики");
 
-  // fs.writeFile("ggr_bot_data.json", JSON.stringify(stats), "utf8", err => {
-  //   if (err) {
-  //     console.log("Файл не сохранен");
-  //     console.log(err);
-  //     callback();
-  //   }
-  //   console.log("The file was saved!");
-  //   callback();
-  // });
-
   const queryText = "insert into stat(object) values($1)";
 
   const values = [JSON.stringify(stats)];
-  //db.query(queryText, values, (err, res) => {
 
   db.query(queryText, values, (err, res) => {
     if (err) {
@@ -71,23 +50,8 @@ function resetStats(callback) {
 }
 
 function readData(callback) {
-  // fs.readFile("ggr_bot_data.json", "utf8", (err, data) => {
-  //   if (err) {
-  //     console.log("Не прочитали файлик");
-  //     resetStats(() => {
-  //       callback();
-  //     });
-  //   } else {
-  //     console.log("Успешно прочитали файлик");
-  //     stats = JSON.parse(data);
-  //     callback();
-  //   }
-  //});
 
   const queryText = "select object from stat";
-
-  //const values = [-233162232, true];
-  //db.query(queryText, values, (err, res) => {
 
   db.query(queryText, [], (err, res) => {
     if (err) {
@@ -131,7 +95,7 @@ function testSender(msg, sum) {
     }
   } else {
     console.log("Нашли " + JSON.stringify(currentUserObj));
-    if (sum > 0) {
+    if (sum > 0)
       if (stats.totalSum + sum <= stats.total) {
         stats.table[currentIndex].sum += sum;
       } else {
@@ -148,13 +112,16 @@ function testSender(msg, sum) {
 function sendMessage(msg) {
   let chatId = msg.chat.id;
   let messageText = `Собираем ${stats.total} ₽`;
-  messageText += `\nСобрали ${stats.totalSum} ₽`;
-  if (msg.text == "/reset@ggr_tymen_bot") {
+  messageText += `\n Собрали ${stats.totalSum} ₽`;
+
+    if (msg.text == "/reset@ggr_tymen_bot") {
   } else {
     bot
       .getChatMembersCount(chatId)
       .then(membersCount => {
         console.log("Получили количество чатеров");
+
+        messageText += `\nС каждого ${stats.total/membersCount} ₽`;
 
         stats.table.forEach(
           user =>
@@ -197,7 +164,6 @@ function replyToMessage(chatId, messageText, messageID) {
 
 function setTotal(msg, match) {
   const sum = +match[1];
-  const chatId = msg.chat.id;
 
   if (isNaN(sum)) {
     console.log("сумма isNaN");
