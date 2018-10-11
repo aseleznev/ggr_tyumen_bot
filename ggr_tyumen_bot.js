@@ -1,7 +1,7 @@
 const TelegramBot = require("node-telegram-bot-api");
 const db = require("./db");
 
-const config = require('./config');
+const config = require("./config");
 const bot = new TelegramBot(config.telegram.token, config.telegram.options);
 
 bot.setWebHook(`${config.app.uri}/bot${config.telegram.token}`);
@@ -50,7 +50,6 @@ function resetStats(callback) {
 }
 
 function readData(callback) {
-
   const queryText = "select object from stat";
 
   db.query(queryText, [], (err, res) => {
@@ -95,7 +94,7 @@ function testSender(msg, sum) {
     }
   } else {
     console.log("Нашли " + JSON.stringify(currentUserObj));
-    if (sum > 0)
+    if (sum > 0) {
       if (stats.totalSum + sum <= stats.total) {
         stats.table[currentIndex].sum += sum;
       } else {
@@ -114,14 +113,15 @@ function sendMessage(msg) {
   let messageText = `Собираем ${stats.total} ₽`;
   messageText += `\n Собрали ${stats.totalSum} ₽`;
 
-    if (msg.text == "/reset@ggr_tymen_bot") {
-  } else {
+  if (msg.text !== "/reset@ggr_tymen_bot") {
     bot
       .getChatMembersCount(chatId)
       .then(membersCount => {
         console.log("Получили количество чатеров");
 
-        messageText += `\nС каждого ${stats.total/membersCount} ₽`;
+        if (stats.total > 0) {
+          messageText += `\nС каждого ${stats.total / membersCount} ₽`;
+        }
 
         stats.table.forEach(
           user =>
